@@ -1,0 +1,1081 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:b="http://www.google.com/2005/gml" xmlns:data="http://www.google.com/2005/gml/data" xmlns:expr="http://www.google.com/2005/gml/expr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sneek Tools | JPG ↔ PDF Converter</title>
+    <b:include data='blog' name='all-head-content'/>
+    <meta name="description" content="Free online tool to convert images to PDF and PDFs to images. No registration required. Fast, secure, and easy to use.">
+    <meta name="keywords" content="jpg to pdf, pdf to jpg, image converter, free converter, online tools, sneek tools">
+    <meta name="author" content="Sneek Tools">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <style>
+        :root {
+            --primary: #6c63ff;
+            --secondary: #4d9de0;
+            --accent: #a15deb;
+            --light: #f8f9fa;
+            --dark: #1e1e2d;
+            --gray: #e9ecef;
+            --glass: rgba(255, 255, 255, 0.15);
+            --shadow: 0 8px 32px rgba(31, 38, 135, 0.1);
+            --border-radius: 16px;
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e7f1 100%);
+            color: var(--dark);
+            line-height: 1.6;
+            min-height: 100vh;
+            position: relative;
+            padding-bottom: 80px;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Navbar */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: white;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            transition: var(--transition);
+        }
+
+        .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        .logo i {
+            background: linear-gradient(45deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 30px;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--dark);
+            font-weight: 500;
+            transition: var(--transition);
+            position: relative;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 3px;
+            background: var(--primary);
+            border-radius: 3px;
+            transition: var(--transition);
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        .menu-toggle {
+            display: none;
+            z-index: 110;
+            background: var(--gray);
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        /* Mobile Menu */
+        .mobile-menu {
+            position: fixed;
+            top: 0;
+            left: -300px;
+            width: 280px;
+            height: 100vh;
+            background: white;
+            box-shadow: 5px 0 15px rgba(0,0,0,0.1);
+            z-index: 105;
+            transition: var(--transition);
+            padding: 90px 20px 20px;
+            overflow-y: auto;
+        }
+
+        .mobile-menu.active {
+            left: 0;
+        }
+
+        .mobile-nav-links {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        .mobile-nav-links a {
+            display: block;
+            padding: 15px;
+            text-decoration: none;
+            color: var(--dark);
+            font-weight: 500;
+            border-radius: 10px;
+            transition: var(--transition);
+            background: #f8f9fa;
+        }
+
+        .mobile-nav-links a:hover {
+            background: rgba(108, 99, 255, 0.1);
+            color: var(--primary);
+        }
+
+        .mobile-nav-links a i {
+            margin-right: 10px;
+            width: 25px;
+            text-align: center;
+        }
+
+        /* Hero Section */
+        .hero {
+            text-align: center;
+            padding: 80px 0 40px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .hero h1 {
+            font-size: 2.8rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            background: linear-gradient(45deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            line-height: 1.2;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            color: var(--dark);
+            margin-bottom: 30px;
+            opacity: 0.9;
+        }
+
+        .converter-container {
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+            margin: 40px auto;
+            max-width: 1000px;
+        }
+
+        .converter-card {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 30px;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            border: 1px solid rgba(108, 99, 255, 0.1);
+        }
+
+        .converter-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(108, 99, 255, 0.2);
+        }
+
+        .tool-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .tool-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(45deg, var(--primary), var(--accent));
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+        }
+
+        .tool-title {
+            font-size: 1.8rem;
+            font-weight: 600;
+        }
+
+        .tool-description {
+            color: #666;
+            margin-bottom: 25px;
+        }
+
+        .converter-interface {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+        }
+
+        .input-section, .output-section {
+            flex: 1;
+            min-width: 300px;
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title i {
+            color: var(--primary);
+        }
+
+        .file-upload {
+            border: 2px dashed var(--gray);
+            border-radius: var(--border-radius);
+            padding: 40px 20px;
+            text-align: center;
+            margin-bottom: 20px;
+            cursor: pointer;
+            transition: var(--transition);
+            background: #f9f9f9;
+        }
+
+        .file-upload:hover {
+            border-color: var(--primary);
+            background: rgba(108, 99, 255, 0.05);
+        }
+
+        .file-upload i {
+            font-size: 3rem;
+            color: var(--primary);
+            margin-bottom: 15px;
+        }
+
+        .file-upload p {
+            margin-bottom: 5px;
+        }
+
+        .file-upload .small {
+            font-size: 0.85rem;
+            color: #888;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .file-info {
+            background: var(--light);
+            border-radius: var(--border-radius);
+            padding: 15px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .file-info.active {
+            display: block;
+        }
+
+        .file-name {
+            font-weight: 500;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .file-size {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .remove-file {
+            color: #ff4d4d;
+            cursor: pointer;
+            margin-left: auto;
+        }
+
+        .convert-btn {
+            background: linear-gradient(45deg, var(--primary), var(--accent));
+            border: none;
+            color: white;
+            padding: 12px 30px;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: var(--transition);
+            font-weight: 500;
+            font-size: 1rem;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .convert-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(108, 99, 255, 0.3);
+        }
+
+        .convert-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .progress-container {
+            margin: 25px 0;
+            display: none;
+        }
+
+        .progress-container.active {
+            display: block;
+        }
+
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .progress-bar {
+            height: 10px;
+            background: #e9ecef;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .progress {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            border-radius: 5px;
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .result-container {
+            background: white;
+            border: 1px solid var(--gray);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            margin-top: 20px;
+            display: none;
+            text-align: center;
+        }
+
+        .result-container.active {
+            display: block;
+        }
+
+        .result-preview {
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: 8px;
+            margin: 15px 0;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .download-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: linear-gradient(45deg, var(--primary), var(--accent));
+            color: white;
+            padding: 12px 30px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 500;
+            margin-top: 15px;
+            transition: var(--transition);
+        }
+
+        .download-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(108, 99, 255, 0.3);
+        }
+
+        /* Page Container */
+        .page-container {
+            display: none;
+            min-height: 70vh;
+            padding: 40px 0;
+        }
+        
+        .page-container.active {
+            display: block;
+        }
+        
+        .page-content {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 40px;
+            box-shadow: var(--shadow);
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        .page-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .page-header h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(45deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 15px;
+        }
+        
+        .page-header p {
+            color: #666;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .google-form-container {
+            margin-top: 30px;
+            min-height: 500px;
+        }
+        
+        .section {
+            margin-bottom: 30px;
+        }
+        
+        .section h2 {
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+            color: var(--primary);
+        }
+        
+        .section p {
+            margin-bottom: 15px;
+            line-height: 1.7;
+        }
+        
+        .section ul {
+            padding-left: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .section li {
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+        
+        /* Disclaimer */
+        .disclaimer {
+            background: #fff8e1;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 20px 0;
+            font-size: 0.9rem;
+        }
+        
+        /* Footer */
+        .footer {
+            background: white;
+            border-top: 1px solid rgba(108, 99, 255, 0.1);
+            padding: 40px 0;
+            margin-top: 60px;
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .copyright {
+            color: #666;
+            font-size: 0.95rem;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 25px;
+        }
+
+        .footer-links a {
+            color: #666;
+            text-decoration: none;
+            transition: var(--transition);
+            font-size: 0.95rem;
+        }
+
+        .footer-links a:hover {
+            color: var(--primary);
+        }
+
+        .social-links {
+            display: flex;
+            gap: 15px;
+        }
+
+        .social-links a {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #f8f9fa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .social-links a:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateY(-5px);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+            
+            .nav-left {
+                gap: 10px;
+            }
+            
+            .logo span {
+                font-size: 1.5rem;
+            }
+            
+            .menu-toggle {
+                display: block;
+                order: -1;
+            }
+            
+            .hero {
+                padding: 60px 0 30px;
+            }
+            
+            .hero h1 {
+                font-size: 2.2rem;
+            }
+            
+            .hero p {
+                font-size: 1rem;
+            }
+            
+            .converter-interface {
+                flex-direction: column;
+            }
+            
+            .tool-header {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .footer-content {
+                flex-direction: column;
+                gap: 25px;
+                text-align: center;
+            }
+            
+            .footer-links {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .social-links {
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .logo span {
+                font-size: 1.3rem;
+            }
+            
+            .hero h1 {
+                font-size: 1.8rem;
+            }
+            
+            .tool-title {
+                font-size: 1.5rem;
+            }
+            
+            .converter-card {
+                padding: 20px;
+            }
+            
+            .page-content {
+                padding: 25px;
+            }
+            
+            .page-header h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-left">
+                <button class="menu-toggle" id="menuToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <a href="#" class="logo" onclick="showPage('home')">
+                    <i class="fas fa-bolt"></i>
+                    <span>Sneek Tools</span>
+                </a>
+            </div>
+            
+            <div class="nav-links">
+                <a href="#" onclick="showPage('home')"><i class="fas fa-home"></i> Home</a>
+                <a href="#" onclick="showPage('about')"><i class="fas fa-info-circle"></i> About</a>
+                <a href="#" onclick="showPage('contact')"><i class="fas fa-envelope"></i> Contact</a>
+                <a href="#" onclick="showPage('privacy')"><i class="fas fa-shield-alt"></i> Privacy</a>
+                <a href="#" onclick="showPage('terms')"><i class="fas fa-file-contract"></i> Terms</a>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Mobile Menu -->
+    <div class="mobile-menu" id="mobileMenu">
+        <div class="mobile-nav-links">
+            <a href="#" onclick="showPage('home')"><i class="fas fa-home"></i> Home</a>
+            <a href="#" onclick="showPage('about')"><i class="fas fa-info-circle"></i> About</a>
+            <a href="#" onclick="showPage('contact')"><i class="fas fa-envelope"></i> Contact</a>
+            <a href="#" onclick="showPage('privacy')"><i class="fas fa-shield-alt"></i> Privacy</a>
+            <a href="#" onclick="showPage('terms')"><i class="fas fa-file-contract"></i> Terms</a>
+        </div>
+    </div>
+    
+    <!-- Home Page -->
+    <div id="home-page" class="page-container active">
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="container">
+                <h1>Convert Between JPG and PDF</h1>
+                <p>Free online tool to convert images to PDF and PDFs to images</p>
+            </div>
+        </section>
+        
+        <!-- JPG to PDF Converter -->
+        <div class="container">
+            <div class="converter-container">
+                <div class="converter-card" id="jpg-to-pdf">
+                    <div class="tool-header">
+                        <div class="tool-icon">
+                            <i class="fas fa-file-pdf"></i>
+                        </div>
+                        <h2 class="tool-title">Convert JPG to PDF</h2>
+                    </div>
+                    <p class="tool-description">Transform your JPG images into a professional PDF document. Perfect for sharing multiple images in a single file.</p>
+                    
+                    <div class="disclaimer">
+                        <i class="fas fa-exclamation-triangle"></i> Disclaimer: We are not responsible for any data loss. Please keep backups of your files.
+                    </div>
+                    
+                    <div class="converter-interface">
+                        <div class="input-section">
+                            <h3 class="section-title"><i class="fas fa-upload"></i> Upload JPG Images</h3>
+                            <div class="file-upload" id="jpgUpload">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <p>Click to select JPG images</p>
+                                <p class="small">or drag & drop files here</p>
+                                <p class="small">Supports multiple files (max 10MB each)</p>
+                            </div>
+                            <input type="file" id="jpgInput" accept=".jpg,.jpeg" multiple class="file-input">
+                            
+                            <div class="file-info" id="jpgFileInfo">
+                                <div class="file-name">
+                                    <i class="fas fa-file-image"></i>
+                                    <span id="jpgFileName">image.jpg</span>
+                                    <span class="remove-file" id="removeJpg">
+                                        <i class="fas fa-times"></i>
+                                    </span>
+                                </div>
+                                <div class="file-size" id="jpgFileSize">2.4 MB</div>
+                            </div>
+                        </div>
+                        
+                        <div class="output-section">
+                            <h3 class="section-title"><i class="fas fa-download"></i> Download PDF</h3>
+                            <button class="convert-btn" id="convertToPdfBtn" disabled>
+                                <i class="fas fa-sync-alt"></i> Convert to PDF
+                            </button>
+                            
+                            <div class="progress-container" id="jpgProgressContainer">
+                                <div class="progress-label">
+                                    <span>Processing...</span>
+                                    <span id="jpgProgressValue">0%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress" id="jpgProgress"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="result-container" id="pdfResult">
+                                <i class="fas fa-file-pdf fa-3x" style="color: #e74c3c;"></i>
+                                <h3>Your PDF is Ready!</h3>
+                                <p>Download your converted PDF file</p>
+                                <a href="#" class="download-btn" id="downloadPdfBtn">
+                                    <i class="fas fa-download"></i> Download PDF
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- PDF to JPG Converter -->
+                <div class="converter-card" id="pdf-to-jpg">
+                    <div class="tool-header">
+                        <div class="tool-icon">
+                            <i class="fas fa-file-image"></i>
+                        </div>
+                        <h2 class="tool-title">Convert PDF to JPG</h2>
+                    </div>
+                    <p class="tool-description">Extract images from PDF files or convert PDF pages to JPG images. Each page becomes a separate image.</p>
+                    
+                    <div class="disclaimer">
+                        <i class="fas fa-exclamation-triangle"></i> Disclaimer: We are not responsible for any data loss. Please keep backups of your files.
+                    </div>
+                    
+                    <div class="converter-interface">
+                        <div class="input-section">
+                            <h3 class="section-title"><i class="fas fa-upload"></i> Upload PDF File</h3>
+                            <div class="file-upload" id="pdfUpload">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <p>Click to select a PDF file</p>
+                                <p class="small">or drag & drop file here</p>
+                                <p class="small">Max file size: 25MB</p>
+                            </div>
+                            <input type="file" id="pdfInput" accept=".pdf" class="file-input">
+                            
+                            <div class="file-info" id="pdfFileInfo">
+                                <div class="file-name">
+                                    <i class="fas fa-file-pdf"></i>
+                                    <span id="pdfFileName">document.pdf</span>
+                                    <span class="remove-file" id="removePdf">
+                                        <i class="fas fa-times"></i>
+                                    </span>
+                                </div>
+                                <div class="file-size" id="pdfFileSize">5.7 MB</div>
+                            </div>
+                        </div>
+                        
+                        <div class="output-section">
+                            <h3 class="section-title"><i class="fas fa-download"></i> Download JPG Images</h3>
+                            <button class="convert-btn" id="convertToJpgBtn" disabled>
+                                <i class="fas fa-sync-alt"></i> Convert to JPG
+                            </button>
+                            
+                            <div class="progress-container" id="pdfProgressContainer">
+                                <div class="progress-label">
+                                    <span>Processing...</span>
+                                    <span id="pdfProgressValue">0%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress" id="pdfProgress"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="result-container" id="jpgResult">
+                                <img src="https://images.unsplash.com/photo-1579546929662-711aa81148cf?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80" alt="Preview" class="result-preview">
+                                <h3>Your JPG Images are Ready!</h3>
+                                <p>Download your converted JPG files</p>
+                                <a href="#" class="download-btn" id="downloadJpgBtn">
+                                    <i class="fas fa-download"></i> Download Images (ZIP)
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- About Page -->
+    <div id="about-page" class="page-container">
+        <div class="container">
+            <div class="page-content">
+                <div class="page-header">
+                    <h1>About Sneek Tools</h1>
+                    <p>Your free online solution for image and document conversion</p>
+                </div>
+                
+                <div class="section">
+                    <h2>Our Mission</h2>
+                    <p>At Sneek Tools, we believe that converting between image and document formats should be simple, fast, and accessible to everyone. Our mission is to provide high-quality conversion tools without the hassle of software installations or subscriptions.</p>
+                    <p>We've created a user-friendly platform that works directly in your browser, ensuring your files remain private and secure. Our tools are completely free to use, with no hidden fees or limitations.</p>
+                </div>
+                
+                <div class="section">
+                    <h2>How It Works</h2>
+                    <p>Our conversion process is designed to be straightforward:</p>
+                    <ul>
+                        <li><strong>Upload</strong> - Select your files using our simple upload interface</li>
+                        <li><strong>Convert</strong> - Our system processes your files in seconds</li>
+                        <li><strong>Download</strong> - Get your converted files immediately</li>
+                    </ul>
+                    <p>All processing happens in your browser, meaning your files never leave your computer. This ensures maximum privacy and security for your documents.</p>
+                </div>
+                
+                <div class="section">
+                    <h2>Our Team</h2>
+                    <p>We're a small team of developers and designers passionate about creating tools that solve real problems. With backgrounds in web development, UX design, and digital security, we've built a platform that combines ease of use with powerful functionality.</p>
+                    <p>We're constantly working to improve our tools and add new features based on user feedback. If you have suggestions or encounter any issues, please don't hesitate to contact us.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Contact Page -->
+    <div id="contact-page" class="page-container">
+        <div class="container">
+            <div class="page-content">
+                <div class="page-header">
+                    <h1>Contact Us</h1>
+                    <p>Have questions or feedback? We'd love to hear from you</p>
+                </div>
+                
+                <div class="section">
+                    <h2>Get In Touch</h2>
+                    <p>Whether you have questions about our tools, need technical support, or want to suggest new features, our team is here to help. Fill out the form below and we'll get back to you as soon as possible.</p>
+                    <p>For business inquiries or partnership opportunities, please include your contact information and we'll reach out to discuss how we can work together.</p>
+                </div>
+                
+                <div class="google-form-container">
+                    <!-- Replace this iframe with your Google Form embed code -->
+                    <iframe src="https://docs.google.com/forms/d/e/1FAIpQLScExample/viewform?embedded=true" 
+                            width="100%" height="1200" frameborder="0" marginheight="0" marginwidth="0">
+                        Loading contact form...
+                    </iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Privacy Policy Page -->
+    <div id="privacy-page" class="page-container">
+        <div class="container">
+            <div class="page-content">
+                <div class="page-header">
+                    <h1>Privacy Policy</h1>
+                    <p>Your privacy is important to us</p>
+                </div>
+                
+                <div class="section">
+                    <p>This Privacy Policy explains how Sneek Tools ("we", "us", or "our") collects, uses, and protects your information when you use our website and services.</p>
+                </div>
+                
+                <div class="section">
+                    <h2>Information We Don't Collect</h2>
+                    <p>We take your privacy seriously. Unlike many other online tools, we do not:</p>
+                    <ul>
+                        <li>Collect or store any personal information</li>
+                        <li>Require registration or sign-up</li>
+                        <li>Use tracking cookies or analytics services</li>
+                        <li>Sell or share data with third parties</li>
+                    </ul>
+                </div>
+                
+                <div class="section">
+                    <h2>File Processing</h2>
+                    <p>All file conversions happen directly in your browser. Your files never leave your device and are not uploaded to any server. This means:</p>
+                    <ul>
+                        <li>We have no access to your files</li>
+                        <li>Your files are not stored on our servers</li>
+                        <li>Your documents remain completely private</li>
+                    </ul>
+                    <p>Once you close your browser tab, all traces of your files are permanently deleted from your device.</p>
+                </div>
+                
+                <div class="section">
+                    <h2>Data Loss Disclaimer</h2>
+                    <p>We are not responsible for any data loss that may occur during the conversion process. While we strive to provide reliable services, we cannot guarantee that the conversion process will be error-free. Users are advised to keep backups of their original files.</p>
+                </div>
+                
+                <div class="section">
+                    <h2>Cookies and Tracking</h2>
+                    <p>We do not use any tracking cookies, analytics services, or advertising trackers. Our website may use strictly necessary cookies for basic functionality, but these do not collect personal information.</p>
+                </div>
+                
+                <div class="section">
+                    <h2>Changes to This Policy</h2>
+                    <p>We may update our Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page. You are advised to review this Privacy Policy periodically for any changes.</p>
+                </div>
+                
+                <div class="section">
+                    <h2>Contact Us</h2>
+                    <p>If you have any questions about this Privacy Policy, please contact us through our contact page.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Terms of Service Page -->
+    <div id="terms-page" class="page-container">
+        <div class="container">
+            <div class="page-content">
+                <div class="page-header">
+                    <h1>Terms of Service</h1>
+                    <p>Please read these terms carefully before using our services</p>
+                </div>
+                
+                <div class="section">
+                    <h2>Acceptance of Terms</h2>
+                    <p>By accessing or using the Sneek Tools website and services, you agree to be bound by these Terms of Service. If you do not agree to all of these terms, do not use our services.</p>
+                </div>
+                
+                <div class="section">
+                    <h2>Description of Service</h2>
+                    <p>Sneek Tools provides online file conversion tools ("Service") that allow users to convert between various file formats. The Service is provided free of charge and is accessible via web browser.</p>
+                </div>
+                
+                <div class="section">
+                    <h2>User Responsibilities</h2>
+                    <p>As a user of our Service, you agree to:</p>
+                    <ul>
+                        <li>Use the Service only for lawful purposes</li>
+                        <li>Not upload any malicious files or content</li>
+                        <li>Not attempt to disrupt or interfere with the Service</li>
+                        <li>Comply with all applicable laws and regulations</li>
+                    </ul>
+                </div>
+                
+                <div class="section">
+                    <h2>Data Loss Disclaimer</h2>
+                    <p>We are not responsible for any data loss or damage that may occur during the conversion process. While we strive to provide a reliable service, we cannot guarantee that the conversion process will be error-free. Users are solely responsible for maintaining backups of their original files.</p>
+                </div>
+                
+                <div class="section">
+                    <h2>Intellectual Property</h2>
+                    <p>You retain all rights to the files you upload and convert using our Service. By using our Service, you grant us a limited, non-exclusive license to process your files solely for the purpose of providing the conversion service.</p>
+                </div>
+                
+                <div class="section">
+                    <h2>Disclaimer of Warranties</h2>
+                    <p>The Service is provided "as is" without warranty of any kind. We do not guarantee that:</p>
+                    <ul>
+                        <li>The Service will meet your requirements</li>
+                        <li>The Service will be uninterrupted or error-free</li>
+                        <li>The results obtained from using the Service will be accurate or reliable</li>
+                    </ul>
+                </div>
+                
+                <div class="section">
+                    <h2>Limitation of Liability</h2>
+                    <p>In no event shall Sneek Tools be liable for any damages arising out of the use or inability to use the Service. This includes, without limitation, damages for loss of data, business interruption, or any other commercial damages or losses.</p>
+                </div>
+                
+                <div class="section">
+                    <h2>Changes to Terms</h2>
+                    <p>We reserve the right to modify these Terms of Service at any time. We will notify users of any changes by updating the "Last Updated" date at the top of this page. Your continued use of the Service after any such changes constitutes your acceptance of the new Terms.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="copyright">
+                    © 2025 Sneek Tools. All rights reserved.
+                </div>
+                
+                <div class="footer-links">
+                    <a href="#" onclick="showPage('privacy')">Privacy Policy</a>
+                    <a href="#" onclick="showPage('terms')">Terms of Service</a>
+                    <a href="#" onclick="showPage('contact')">Contact Us</a>
+                </div>
+                
+                <div class="social-links">
+                    <a href="#"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                </div>
+            </div>
+        </div>
+    </footer>
+    
+    <script>
+        // Initialize PDF.js
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
+        
+        // DOM Elements
+        const menuToggle = document.getElementById('menuToggle');
+        const mobileMenu = document.getElementById('mobileMenu');
+        
+        // Page Navigation
+        function showPage(pageId) {
+            // Hide all pages
+            document.querySelectorAll('.page-container').forEach(page => {
+                page.classList.remove('active');
+            });
+            
+            // Show selected page
+            document.getElementById(`${pageId}-page`).classList.add('active');
+            
+            // Close mobile menu if open
+            if (mobileMenu.classList.contains('active')) {
+                mobileMenu.classList.remove('active');
+                menuToggle.innerHTML = '<i class="fas fa-bars"></i>';
+            }
+            
+            // Scroll to top
+            window.scrollTo
